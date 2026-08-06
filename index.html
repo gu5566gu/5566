@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📍 座標待認領分享板</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button.submit-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        button.submit-btn:hover {
+            background-color: #2980b9;
+        }
+        .card {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 5px solid #e74c3c;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        /* 已領取的卡片樣式 */
+        .card.claimed {
+            border-left: 5px solid #95a5a6;
+            background: #fdfdfd;
+            opacity: 0.85;
+        }
+        .card-info {
+            flex-grow: 1;
+        }
+        .card-info h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .card-info p {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+        .card-info a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .card-info a:hover {
+            text-decoration: underline;
+        }
+        .time-stamp {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 8px !important;
+        }
+        .claimer-text {
+            color: #27ae60;
+            font-weight: bold;
+            background: #e8f8f5;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 5px !important;
+        }
+        /* 複製按鈕樣式 */
+        button.copy-btn {
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 8px;
+            color: #2c3e50;
+        }
+        button.copy-btn:hover {
+            background-color: #e0e0e0;
+        }
+        /* 右側操作按鈕區 */
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: 15px;
+        }
+        button.claim-btn, button.delete-btn {
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+            width: 120px;
+        }
+        button.claim-btn {
+            background-color: #2ecc71;
+        }
+        button.claim-btn:hover {
+            background-color: #27ae60;
+        }
+        button.delete-btn {
+            background-color: #e74c3c;
+        }
+        button.delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .empty-msg {
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .card-actions {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+            button.claim-btn, button.delete-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📍 座標待認領分享板</h1>
+
+    <div class="form-container">
+        <form id="shareForm">
+            <!-- 新增發布者欄位 -->
+            <div class="form-group">
+                <label for="publisher">👤 發布者</label>
+                <input type="text" id="publisher" placeholder="請輸入你的遊戲暱稱" required>
+            </div>
+            <div class="form-group">
+                <label for="itemName">🎯 目標名稱</label>
+                <select id="itemName" required>
+                    <option value="" disabled selected>請選擇目標 (必填)</option>
+                    <option value="大水">大水</option>
+                    <option value="大火">大火</option>
+                    <option value="大電">大電</option>
+                    <option value="大水晶">大水晶</option>
+                    <option value="大毒">大毒</option>
+                    <option value="大紅">大紅</option>
+                    <option value="大粉紅">大粉紅</option>
+                    <option value="大黃">大黃</option>
+                    <option value="大藍">大藍</option>
+                    <option value="大紫">大紫</option>
+                    <option value="大白">大白</option>
+                    <option value="大灰">大灰</option>
+                    <option value="大冰藍">大冰藍</option>
+                    <option value="巨菇">巨菇</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="coords">📍 座標 (緯度, 經度)</label>
+                <input type="text" id="coords" placeholder="例如：25.0339, 121.5645" required>
+            </div>
+            <div class="form-group">
+                <label for="note">📝 備註說明 (選填)</label>
+                <input type="text" id="note" placeholder="例如：剩餘時間 2小時 / 缺戰力">
+            </div>
+            <button type="submit" class="submit-btn">發布座標</button>
+        </form>
+    </div>
+
+    <div id="listContainer">
+        <!-- 列表會透過 JavaScript 動態產生在這裡 -->
+    </div>
+
+    <script>
+        let coordinatesList = JSON.parse(localStorage.getItem('sharedCoords')) || [];
+
+        function renderList() {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = '';
+            
+            if (coordinatesList.length === 0) {
+                container.innerHTML = '<p class="empty-msg">目前沒有待認領的座標，快來分享第一個吧！</p>';
+                return;
+            }
+
+            const displayList = [...coordinatesList].reverse();
+
+            displayList.forEach((item, displayIndex) => {
+                const originalIndex = coordinatesList.length - 1 - displayIndex;
+                
+                // 判斷是否已被領取，給予不同的 CSS Class
+                const cardClass = item.isClaimed ? 'card claimed' : 'card';
+                
+                // 產生領取者的 HTML 片段
+                const claimerHtml = item.isClaimed 
+                    ? `<p class="claimer-text">🙋 領取者：${item.claimer}</p>` 
+                    : '';
+
+                // 產生按鈕的 HTML 片段 (未領取顯示登記，已領取顯示刪除)
+                const actionBtnHtml = item.isClaimed
+                    ? `<button class="delete-btn" onclick="deleteItem(${originalIndex})">🗑️ 刪除</button>`
+                    : `<button class="claim-btn" onclick="claimItem(${originalIndex})">✅ 登記領取</button>`;
+
+                const card = document.createElement('div');
+                card.className = cardClass;
+                card.innerHTML = `
+                    <div class="card-info">
+                        <p><strong>👤 發布者：</strong> ${item.publisher || '匿名'}</p>
+                        <h3>🍄 ${item.name}</h3>
+                        <p>
+                            <strong>📍 座標：</strong> 
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.coords)}" target="_blank">${item.coords}</a>
+                            <button class="copy-btn" onclick="copyCoords('${item.coords}')">📋 複製</button>
+                        </p>
+                        <p><strong>📝 備註：</strong> ${item.note || '無'}</p>
+                        ${claimerHtml}
+                        <p class="time-stamp">發布時間：${item.time}</p>
+                    </div>
+                    <div class="card-actions">
+                        ${actionBtnHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 表單提交
+        document.getElementById('shareForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const publisher = document.getElementById('publisher').value;
+            const name = document.getElementById('itemName').value;
+            const coords = document.getElementById('coords').value;
+            const note = document.getElementById('note').value;
+            
+            const newItem = {
+                publisher: publisher,
+                name: name,
+                coords: coords,
+                note: note,
+                time: new Date().toLocaleString('zh-TW'),
+                isClaimed: false, // 預設未領取
+                claimer: ""       // 預設無領取者
+            };
+
+            coordinatesList.push(newItem);
+            localStorage.setItem('sharedCoords', JSON.stringify(coordinatesList));
+            
+            renderList();
+
+            // 只清空座標與備註，保留「發布者」和「目標名稱」，方便連續發布
+            document.getElementById('coords').value = '';
+            document.getElementById('note').value = '';
+        });
+
+        // 複製座標功能
+        window.copyCoords = function(coords) {
+            navigator.clipboard.writeText(coords).then(() => {
+                alert('✅ 座標已複製：' + coords);
+            }).catch(err => {
+                alert('❌ 複製失敗，請手動複製');
+            });
+        };
+
+        // 登記領取功能
+        window.claimItem = function(index) {
+            const claimerName = prompt("請輸入你的遊戲暱稱 (領取者)：");
+            if (claimerName && claimerName.trim() !== "") {
+                coordinatesList[index].isClaimed = true;
+                coordinatesList[index].claimer = claimerName.trim();
+                localStorage.setItem('sharedCoords', JSON.stringify(coordinatesList));
+                renderList();
+            }
+        };
+
+        // 刪除功能
+        window.deleteItem = function(index) {
+            if(confirm('確定要將此座標從列表中完全刪除嗎？')) {
+                coordinatesList.splice(index, 1);
+                localStorage.setItem('sharedCoords', JSON.stringify(coordinatesList));
+                renderList();
+            }
+        };
+
+        // 初始化
+        renderList();
+    </script>
+</body>
+</html>
