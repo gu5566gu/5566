@@ -1,75 +1,226 @@
-<script>
-  // ⚠️ 請將下方 URL 替換為您部署後獲得的 Web 應用程式網址，並加上 ?type=json
-  const API_URL = "https://script.google.com/macros/s/AKfycby0YEFTHAkqsBT2doThFOk3UkX9sE7w60_pIkhy7MS4ylSse-a4BqiuupHHxYbrSIqd/exec?type=json";
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>皮克敏花農情報站</title>
+    <style>
+      :root {
+        --primary-color: #4CAF50;
+        --bg-color: #f4f8f3;
+        --card-bg: #ffffff;
+        --text-color: #333;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 15px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .header {
+        text-align: center;
+        padding: 15px 0;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #2e7d32;
+      }
+      .header p {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+      }
+      .btn-refresh {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 20px;
+        display: block;
+        width: 100%;
+        font-size: 1rem;
+        box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
+        transition: background-color 0.2s;
+      }
+      .btn-refresh:active {
+        background-color: #388E3C;
+      }
+      .card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 5px solid var(--primary-color);
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #e0e0e0;
+        padding-bottom: 8px;
+      }
+      .flower-type {
+        font-weight: bold;
+        font-size: 1.15rem;
+        color: #1b5e20;
+      }
+      .farmer-badge {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .info-row {
+        margin: 8px 0;
+        font-size: 0.95rem;
+        word-break: break-all;
+        line-height: 1.4;
+      }
+      .label {
+        font-weight: bold;
+        color: #555;
+      }
+      .copy-btn {
+        background-color: #e0f2f1;
+        color: #00796b;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-left: 8px;
+        font-weight: bold;
+      }
+      .copy-btn:active {
+        background-color: #b2dfdb;
+      }
+      .time-tag {
+        font-size: 0.8rem;
+        color: #9e9e9e;
+        text-align: right;
+        margin-top: 10px;
+      }
+      .loading {
+        text-align: center;
+        padding: 30px;
+        color: #777;
+        font-size: 1.1rem;
+      }
+      .error-msg {
+        color: #d32f2f;
+        text-align: center;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
 
-  function loadData() {
-    document.getElementById('data-list').innerHTML = '<div class="loading">讀取最新花情中...</div>';
+    <div class="header">
+      <h1>🌸 皮克敏花農情報站</h1>
+      <p>即時查詢最新回報大花資訊</p>
+    </div>
 
-    // 🌐 使用標準 JavaScript fetch() 呼叫 API
-    fetch(API_URL)
-      .then(response => {
-        if (!response.ok) throw new Error('網路回應異常');
-        return response.json();
-      })
-      .then(data => {
-        renderCards(data); // 成功取得 JSON 後渲染卡片
-      })
-      .catch(error => {
-        console.error('API 讀取錯誤:', error);
-        document.getElementById('data-list').innerHTML = '<div class="loading" style="color:red;">資料載入失敗，請確認 API 網址設定。</div>';
-      });
-  }
+    <button class="btn-refresh" onclick="fetchData()">🔄 點我刷新最新情報</button>
 
-  function renderCards(data) {
-    var container = document.getElementById('data-list');
-    if (!data || data.length === 0) {
-      container.innerHTML = '<div class="loading">目前尚無任何花田回報。</div>';
-      return;
-    }
+    <div id="data-list" class="card-container">
+      <div class="loading">資料載入中，請稍候...</div>
+    </div>
 
-    var html = '';
-    data.forEach(function(item) {
-      html += `
-        <div class="card">
-          <div class="card-header">
-            <span class="flower-type">🌸 ${escapeHtml(item.flowerType)}</span>
-            <span class="farmer-badge">👩‍🌾 ${escapeHtml(item.farmer)}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">⏰ 首花時間：</span>${escapeHtml(item.bloomTime)}
-          </div>
-          <div class="info-row">
-            <span class="label">📍 座標/位置：</span>
-            <span>${escapeHtml(item.location)}</span>
-            <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
-          </div>
-          <div class="info-row">
-            <span class="label">📝 備註：</span>${escapeHtml(item.note)}
-          </div>
-          <div class="time-tag" style="margin-top: 8px; text-align: right;">
-            回報時間：${escapeHtml(item.timestamp)}
-          </div>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
+    <script>
+      // 這是您部署後獲得的 GAS API 網址
+      const API_URL = "https://script.google.com/macros/s/AKfycbxLRVcQEp9IgyLodZF1YjeDS26GiQanR1HfT2wNsyw_TYT_k5ajnQ0zOroux49vmgom/exec";
 
-  function copyText(text) {
-    navigator.clipboard.writeText(text).then(() => {
-      alert('已複製座標/地點：' + text);
-    }).catch(err => {
-      alert('複製失敗，請手動複製');
-    });
-  }
+      function fetchData() {
+        const container = document.getElementById('data-list');
+        container.innerHTML = '<div class="loading">🔄 努力讀取花情中...</div>';
 
-  function escapeHtml(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+        // 使用標準 GET 請求，加入 redirect: "follow" 以支援 GAS 的重新導向，且不加自訂 headers 避免 CORS 錯誤
+        fetch(API_URL, {
+          method: "GET",
+          redirect: "follow"
+        })
+        .then(response => {
+          if (!response.ok) throw new Error("網路回應不成功: " + response.status);
+          return response.json();
+        })
+        .then(data => {
+          renderCards(data);
+        })
+        .catch(error => {
+          console.error("Fetch 錯誤:", error);
+          container.innerHTML = '<div class="error-msg">❌ 資料載入失敗，請確認 API 網址或跨域權限設定。</div>';
+        });
+      }
 
-  function escapeJs(str) {
-    return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
-  }
+      function renderCards(data) {
+        const container = document.getElementById('data-list');
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="loading">🈳 目前尚無任何花田回報。</div>';
+          return;
+        }
 
-  window.onload = loadData;
-</script>
+        let html = '';
+        data.forEach(function(item) {
+          html += `
+            <div class="card">
+              <div class="card-header">
+                <span class="flower-type">🌸 ${escapeHtml(item.flowerType)}</span>
+                <span class="farmer-badge">👩‍🌾 ${escapeHtml(item.farmer)}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">⏰ 首花時間：</span>${escapeHtml(item.bloomTime)}
+              </div>
+              <div class="info-row">
+                <span class="label">📍 座標/位置：</span>
+                <span>${escapeHtml(item.location)}</span>
+                <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製</button>
+              </div>
+              <div class="info-row">
+                <span class="label">📝 備註：</span>${escapeHtml(item.note)}
+              </div>
+              <div class="time-tag">
+                回報時間：${escapeHtml(item.timestamp)}
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+
+      function copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('✅ 成功複製：' + text);
+        }).catch(err => {
+          alert('❌ 複製失敗，請手動選取複製');
+        });
+      }
+
+      // 防止 XSS 攻擊的跳脫字元處理
+      function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      function escapeJs(str) {
+        return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+      }
+
+      // 頁面載入時自動執行一次抓取
+      window.onload = fetchData;
+    </script>
+  </body>
+</html>
