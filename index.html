@@ -173,6 +173,20 @@
         cursor: pointer;
         font-weight: bold;
       }
+      .delete-btn {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #ef9a9a;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: bold;
+        margin-left: 6px;
+      }
+      .delete-btn:hover {
+        background-color: #ffcdd2;
+      }
       .time-tag {
         font-size: 0.75rem;
         color: #9e9e9e;
@@ -229,7 +243,7 @@
     </div>
 
     <script>
-      const API_URL = "https://script.google.com/macros/s/AKfycbwwsnGZmdfU1RtuhzSOJWBbfuVQv9XKhwFecnl6aOoL2KBRAxsBSqmUJWXCqUnuxEgu/exec";
+      const API_URL = "https://script.google.com/macros/s/AKfycbwlG_d7X6cxY_JttjVpMu_4LqdEXM5mTaVl3zXiWt2K39b5lT7lRsuwYHSteq6A-L7P/exec";
 
       // 送出表單卡片資料
       function submitForm(event) {
@@ -275,6 +289,37 @@
         });
       }
 
+      // 刪除該筆情報資料
+      function deleteItem(rowIndex) {
+        if (!confirm("⚠️ 確定要刪除這筆花田情報嗎？刪除後無法恢復喔！")) return;
+
+        fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            action: "delete",
+            rowIndex: rowIndex
+          }),
+          redirect: "follow"
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            alert("🗑️ 已成功刪除情報！");
+            fetchData();
+          } else {
+            alert("❌ 刪除失敗：" + (res.message || "未知錯誤"));
+          }
+        })
+        .catch(err => {
+          console.error("Delete error:", err);
+          alert("❌ 發送刪除請求時發生錯誤，正在為您更新清單...");
+          fetchData();
+        });
+      }
+
       // 讀取花田情報清單
       function fetchData() {
         const container = document.getElementById('data-list');
@@ -311,7 +356,10 @@
             <div class="card">
               <div class="card-header">
                 <span class="flower-type">🌸 ${escapeHtml(item.flowerType)}</span>
-                <span class="farmer-badge">👤 ${escapeHtml(item.farmer)}</span>
+                <div style="display: flex; align-items: center;">
+                  <span class="farmer-badge">👤 ${escapeHtml(item.farmer)}</span>
+                  <button class="delete-btn" onclick="deleteItem(${item.rowIndex})">🗑️ 刪除</button>
+                </div>
               </div>
               <div class="info-row">
                 <span class="label">⏰ 首花時間：</span>${escapeHtml(item.bloomTime)}
