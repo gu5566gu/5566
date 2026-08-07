@@ -54,7 +54,7 @@
         padding-bottom: 6px;
       }
       .form-group {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
       .form-group label {
         display: block;
@@ -63,15 +63,20 @@
         color: #444;
         margin-bottom: 4px;
       }
-      .form-group input, .form-group select {
+      .form-group input, .form-group textarea {
         width: 100%;
         padding: 8px 10px;
         border: 1px solid #ccc;
         border-radius: 6px;
         font-size: 0.95rem;
         box-sizing: border-box;
+        font-family: inherit;
       }
-      .form-group input:focus, .form-group select:focus {
+      .form-group textarea {
+        resize: vertical;
+        min-height: 70px;
+      }
+      .form-group input:focus, .form-group textarea:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
@@ -141,7 +146,7 @@
         font-weight: bold;
       }
       .info-row {
-        margin: 6px 0;
+        margin: 8px 0;
         font-size: 0.95rem;
         word-break: break-all;
       }
@@ -149,15 +154,23 @@
         font-weight: bold;
         color: #555;
       }
+      .location-box {
+        margin-top: 4px;
+        white-space: pre-wrap;
+        background-color: #f9fdf9;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        line-height: 1.4;
+      }
       .copy-btn {
         background-color: #e0f2f1;
         color: #00796b;
         border: none;
-        padding: 4px 8px;
+        padding: 4px 10px;
         border-radius: 4px;
         font-size: 0.8rem;
         cursor: pointer;
-        margin-left: 6px;
         font-weight: bold;
       }
       .time-tag {
@@ -185,19 +198,16 @@
       <h2>📝 回報花田情報</h2>
       <form id="flowerForm" onsubmit="submitForm(event)">
         <div class="form-group">
-          <label for="farmer">👩‍🌾 回報花農</label>
-          <select id="farmer" required>
-            <option value="小天使">小天使</option>
-            <option value="思思">思思</option>
-          </select>
+          <label for="farmer">👤 回報人</label>
+          <input type="text" id="farmer" placeholder="請輸入您的名字或暱稱" required>
         </div>
         <div class="form-group">
           <label for="flowerType">🌸 花種</label>
           <input type="text" id="flowerType" placeholder="例如：白色大麗花" required>
         </div>
         <div class="form-group">
-          <label for="location">📍 座標 / 位置</label>
-          <input type="text" id="location" placeholder="例如：25.033968, 121.564468" required>
+          <label for="location">📍 座標 / 位置（支援多行拉長填寫）</label>
+          <textarea id="location" rows="3" placeholder="例如：25.033968, 121.564468&#10;或詳細地點描述" required></textarea>
         </div>
         <div class="form-group">
           <label for="bloomTime">⏰ 首花時間</label>
@@ -301,15 +311,17 @@
             <div class="card">
               <div class="card-header">
                 <span class="flower-type">🌸 ${escapeHtml(item.flowerType)}</span>
-                <span class="farmer-badge">👩‍🌾 ${escapeHtml(item.farmer)}</span>
+                <span class="farmer-badge">👤 ${escapeHtml(item.farmer)}</span>
               </div>
               <div class="info-row">
                 <span class="label">⏰ 首花時間：</span>${escapeHtml(item.bloomTime)}
               </div>
               <div class="info-row">
-                <span class="label">📍 座標/位置：</span>
-                <span>${escapeHtml(item.location)}</span>
-                <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span class="label">📍 座標/位置：</span>
+                  <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
+                </div>
+                <div class="location-box">${escapeHtml(item.location)}</div>
               </div>
               <div class="info-row">
                 <span class="label">📝 備註：</span>${escapeHtml(item.note)}
@@ -325,7 +337,7 @@
 
       function copyText(text) {
         navigator.clipboard.writeText(text).then(() => {
-          alert('✅ 已複製座標/地點：' + text);
+          alert('✅ 已複製座標/地點：\n' + text);
         }).catch(err => {
           alert('❌ 複製失敗，請手動複製');
         });
@@ -335,7 +347,7 @@
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
       function escapeJs(str) {
-        return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+        return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
       }
 
       window.onload = fetchData;
