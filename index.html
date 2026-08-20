@@ -21,9 +21,53 @@
         margin-left: auto;
         margin-right: auto;
       }
+
+      /* ⚡ 精簡版頂部快捷連結樣式 */
+      .quick-links-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 15px;
+      }
+      .link-btn-group {
+        display: flex;
+        background: var(--card-bg);
+        border: 1px solid #c8e6c9;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      }
+      .link-btn-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 6px;
+        color: #2e7d32;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+      .link-btn-main:hover {
+        background-color: #f1f8e9;
+      }
+      .link-btn-copy {
+        background-color: #e8f5e9;
+        border: none;
+        border-left: 1px solid #c8e6c9;
+        color: #2e7d32;
+        padding: 0 10px;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      .link-btn-copy:hover {
+        background-color: #c8e6c9;
+      }
+
       .header {
         text-align: center;
-        padding: 10px 0 15px 0;
+        padding: 5px 0 15px 0;
       }
       .header h1 {
         margin: 0;
@@ -164,11 +208,25 @@
         border: 1px solid #e0e0e0;
         line-height: 1.4;
       }
+      .btn-group-inline {
+        display: flex;
+        gap: 6px;
+      }
       .copy-btn {
         background-color: #e0f2f1;
         color: #00796b;
         border: none;
-        padding: 4px 10px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .copy-btn-info {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: none;
+        padding: 4px 8px;
         border-radius: 4px;
         font-size: 0.8rem;
         cursor: pointer;
@@ -203,6 +261,34 @@
   </head>
   <body>
 
+    <!-- ⚡ 精簡型快捷連結 (2x2 雙欄矩陣) -->
+    <div class="quick-links-grid">
+      <div class="link-btn-group">
+        <a class="link-btn-main" href="https://pikoohiong.com/zh-TW" target="_blank">📮pikoohiong</a>
+        <button class="link-btn-copy" onclick="copyLink('pikoohiong', 'https://pikoohiong.com/zh-TW')" title="複製連結">📋</button>
+      </div>
+
+      <div class="link-btn-group">
+        <a class="link-btn-main" href="https://pickmin-postcards.vercel.app/" target="_blank">📮pickmin</a>
+        <button class="link-btn-copy" onclick="copyLink('pickmin', 'https://pickmin-postcards.vercel.app/')" title="複製連結">📋</button>
+      </div>
+
+      <div class="link-btn-group">
+        <a class="link-btn-main" href="https://gu5566gu.github.io/5566/" target="_blank">🌸 花田分享</a>
+        <button class="link-btn-copy" onclick="copyLink('花田分享', 'https://gu5566gu.github.io/5566/')" title="複製連結">📋</button>
+      </div>
+
+       <div class="link-btn-group">
+        <a class="link-btn-main" href="https://locwarp-wish.pages.dev/" target="_blank">🌸LOC花田</a>
+        <button class="link-btn-copy" onclick="copyLink('LOC', 'https://locwarp-wish.pages.dev/')" title="複製連結">📋</button>
+      </div>
+      
+      <div class="link-btn-group">
+        <a class="link-btn-main" href="https://gu5566gu.github.io/gu/" target="_blank">🍄 菇點分享</a>
+        <button class="link-btn-copy" onclick="copyLink('菇點分享', 'https://gu5566gu.github.io/gu/')" title="複製連結">📋</button>
+      </div>
+    </div>
+
     <div class="header">
       <h1>🌸 皮克敏花農情報站</h1>
       <p>即時回報與查詢大花花田</p>
@@ -216,7 +302,7 @@
           <label for="farmer">👤 回報人</label>
           <select id="farmer" required>
             <option value="" disabled selected>請選擇回報人</option>
-            <option value="轉貼白花收">轉貼!!白花!!收</option>
+          <option value="轉貼白花收">轉貼!!白花!!收</option>
             <option value="轉貼隨意花色收">轉貼隨意花色收</option>
             <option value="小天使隨意白花收">小天使隨意白花收</option>
                         <option value="小天使隨意收">小天使隨意花色收</option>
@@ -256,6 +342,15 @@
 
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbwmQNZg_LnBJd3OybS3svFGdKJ729rYPo-72HQm2_nShKpCQT9uo0bKjUi4pIZHtw0c/exec";
+
+      // 複製頂部連結專用函式
+      function copyLink(title, url) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert(`✅ 已複製【${title}】連結！`);
+        }).catch(err => {
+          alert('❌ 複製失敗，請手動複製');
+        });
+      }
 
       // 送出表單卡片資料
       function submitForm(event) {
@@ -379,7 +474,10 @@
               <div class="info-row">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                   <span class="label">📍 座標/位置：</span>
-                  <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
+                  <div class="btn-group-inline">
+                    <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
+                    <button class="copy-btn-info" onclick="copyCardInfo('${escapeJs(item.flowerType)}', '${escapeJs(item.bloomTime)}', '${escapeJs(item.location)}')">複製資訊</button>
+                  </div>
                 </div>
                 <div class="location-box">${escapeHtml(item.location)}</div>
               </div>
@@ -395,9 +493,20 @@
         container.innerHTML = html;
       }
 
+      // 1. 僅複製座標/位置
       function copyText(text) {
         navigator.clipboard.writeText(text).then(() => {
           alert('✅ 已複製座標/地點：\n' + text);
+        }).catch(err => {
+          alert('❌ 複製失敗，請手動複製');
+        });
+      }
+
+      // 2. 複製完整花情資訊（包含花種、首花時間、座標、分享網址）
+      function copyCardInfo(flowerType, bloomTime, location) {
+        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n gu5566gu.github.io/5566/`;
+        navigator.clipboard.writeText(fullText).then(() => {
+          alert('✅ 已複製完整資訊：\n\n' + fullText);
         }).catch(err => {
           alert('❌ 複製失敗，請手動複製');
         });
