@@ -22,6 +22,31 @@
         margin-right: auto;
       }
 
+      /* 🍞 頁面內浮動提示框 (Toast) */
+      #toast {
+        visibility: hidden;
+        min-width: 200px;
+        background-color: #323232;
+        color: #fff;
+        text-align: center;
+        border-radius: 8px;
+        padding: 10px 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        top: 30px;
+        transform: translateX(-50%);
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        opacity: 0;
+        transition: opacity 0.3s, top 0.3s, visibility 0.3s;
+      }
+      #toast.show {
+        visibility: visible;
+        opacity: 1;
+        top: 40px;
+      }
+
       /* ⚡ 精簡版頂部快捷連結樣式 */
       .quick-links-grid {
         display: grid;
@@ -199,7 +224,6 @@
         font-weight: bold;
         color: #555;
       }
-      /* ⚡ 優化後的座標/位置顯示框 (縮減高度、動態捲軸、優化字體) */
       .location-box {
         margin-top: 4px;
         white-space: pre-wrap;
@@ -209,7 +233,7 @@
         border: 1px solid #e0e0e0;
         line-height: 1.35;
         font-size: 0.85rem;
-        max-height: 30px;
+        max-height: 50px;
         overflow-y: auto;
         word-break: break-all;
       }
@@ -266,6 +290,9 @@
   </head>
   <body>
 
+    <!-- 🍞 頁面提示元件 -->
+    <div id="toast">已成功複製！</div>
+
     <!-- ⚡ 精簡型快捷連結 (雙欄矩陣) -->
     <div class="quick-links-grid">
       <div class="link-btn-group">
@@ -320,7 +347,7 @@
             <option value="思思隨意收">思思隨意花色收</option>
             <option value="YUJIN白花收">YUJIN隨意白花收</option>
             <option value="YUJIN隨意花色收">YUJIN隨意花色收</option>
-            <option value="國民">國民隨便收</option>
+            <option value="國民隨便收">國民隨便收</option>
           </select>
         </div>
         <div class="form-group">
@@ -352,14 +379,25 @@
 
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbwmQNZg_LnBJd3OybS3svFGdKJ729rYPo-72HQm2_nShKpCQT9uo0bKjUi4pIZHtw0c/exec";
+      let toastTimer = null;
+
+      // 顯示頁面內的提示訊息（非彈窗）
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.classList.add("show");
+        
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2000);
+      }
 
       // 複製頂部連結專用函式
       function copyLink(title, url) {
-        navigator.clipboard.writeText(url).then(() => {
-          alert(`✅ 已複製【${title}】連結！`);
-        }).catch(err => {
-          alert('❌ 複製失敗，請手動複製');
-        });
+        navigator.clipboard.writeText(url)
+          .then(() => showToast(`📋 已複製 ${title} 連結`))
+          .catch(err => console.error(err));
       }
 
       // 送出表單卡片資料
@@ -377,7 +415,6 @@
           note: document.getElementById('note').value
         };
 
-        // 使用 text/plain 可避免預檢請求 (CORS OPTIONS 錯誤)
         fetch(API_URL, {
           method: "POST",
           headers: {
@@ -388,16 +425,16 @@
         })
         .then(res => res.json())
         .then(res => {
-          alert("✅ 花田情報已成功送出！");
+          showToast("✅ 花田情報已成功送出！");
           document.getElementById('flowerType').value = '';
           document.getElementById('location').value = '';
           document.getElementById('bloomTime').value = '';
           document.getElementById('note').value = '隨意收';
-          fetchData(); // 送出成功後自動刷新下方清單
+          fetchData();
         })
         .catch(err => {
           console.error("Submit error:", err);
-          alert("✅ 已發送資料，正在為您更新情報清單...");
+          showToast("✅ 已發送資料，正在更新清單...");
           fetchData();
         })
         .finally(() => {
@@ -424,15 +461,15 @@
         .then(res => res.json())
         .then(res => {
           if (res.status === "success") {
-            alert("🗑️ 已成功刪除情報！");
+            showToast("🗑️ 已成功刪除情報！");
             fetchData();
           } else {
-            alert("❌ 刪除失敗：" + (res.message || "未知錯誤"));
+            showToast("❌ 刪除失敗：" + (res.message || "未知錯誤"));
           }
         })
         .catch(err => {
           console.error("Delete error:", err);
-          alert("❌ 發送刪除請求時發生錯誤，正在為您更新清單...");
+          showToast("❌ 發送刪除請求時發生錯誤...");
           fetchData();
         });
       }
@@ -503,23 +540,19 @@
         container.innerHTML = html;
       }
 
-      // 1. 僅複製座標/位置
+      // 1. 複製座標/位置
       function copyText(text) {
-        navigator.clipboard.writeText(text).then(() => {
-          alert('✅ 已複製座標/地點：\n' + text);
-        }).catch(err => {
-          alert('❌ 複製失敗，請手動複製');
-        });
+        navigator.clipboard.writeText(text)
+          .then(() => showToast("📍 已複製座標！"))
+          .catch(err => console.error(err));
       }
 
-      // 2. 複製完整花情資訊（包含花種、首花時間、座標、分享網址）
+      // 2. 複製完整花情資訊
       function copyCardInfo(flowerType, bloomTime, location) {
         const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n gu5566gu.github.io/5566/`;
-        navigator.clipboard.writeText(fullText).then(() => {
-          alert('✅ 已複製完整資訊：\n\n' + fullText);
-        }).catch(err => {
-          alert('❌ 複製失敗，請手動複製');
-        });
+        navigator.clipboard.writeText(fullText)
+          .then(() => showToast("📋 已複製花田資訊！"))
+          .catch(err => console.error(err));
       }
 
       function escapeHtml(str) {
