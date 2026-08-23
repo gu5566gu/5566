@@ -199,14 +199,19 @@
         font-weight: bold;
         color: #555;
       }
+      /* ⚡ 優化後的座標/位置顯示框 (縮減高度、動態捲軸、優化字體) */
       .location-box {
         margin-top: 4px;
         white-space: pre-wrap;
         background-color: #f9fdf9;
-        padding: 8px 10px;
+        padding: 6px 8px;
         border-radius: 6px;
         border: 1px solid #e0e0e0;
-        line-height: 1.4;
+        line-height: 1.35;
+        font-size: 0.85rem;
+        max-height: 50px;
+        overflow-y: auto;
+        word-break: break-all;
       }
       .btn-group-inline {
         display: flex;
