@@ -168,20 +168,53 @@
         background-color: #388E3C;
       }
 
-      /* 情報顯示卡片樣式 */
+      /* 🛠️ 批次操作控制列面板 */
+      .action-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        align-items: center;
+      }
       .btn-refresh {
+        flex: 1;
         background-color: #81c784;
         color: white;
         border: none;
-        padding: 8px 14px;
-        border-radius: 15px;
+        padding: 8px 12px;
+        border-radius: 8px;
         font-weight: bold;
         cursor: pointer;
-        margin-bottom: 15px;
-        display: block;
-        width: 100%;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
       }
+      .btn-batch-delete {
+        background-color: #e53935;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .btn-batch-delete:hover {
+        background-color: #c62828;
+      }
+      .select-all-label {
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        user-select: none;
+        background: #fff;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+
       .card-container {
         display: flex;
         flex-direction: column;
@@ -193,6 +226,7 @@
         padding: 15px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         border-left: 5px solid var(--primary-color);
+        position: relative;
       }
       .card-header {
         display: flex;
@@ -201,6 +235,16 @@
         margin-bottom: 10px;
         border-bottom: 1px dashed #e0e0e0;
         padding-bottom: 8px;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .item-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
       }
       .flower-type {
         font-weight: bold;
@@ -372,7 +416,14 @@
       </form>
     </div>
 
-    <button class="btn-refresh" onclick="fetchData()">🔄 點我手動重新整理清單</button>
+    <!-- 🛠️ 控制列面板（包含重新整理、全選、批次刪除） -->
+    <div class="action-bar">
+      <button class="btn-refresh" onclick="fetchData()">🔄 重新整理</button>
+      <label class="select-all-label">
+        <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"> 全選
+      </label>
+      <button class="btn-batch-delete" onclick="deleteSelectedItems()">🗑️ 刪除選取</button>
+    </div>
 
     <!-- 📋 讀取出的卡片清單 -->
     <div id="data-list" class="card-container">
@@ -380,7 +431,7 @@
     </div>
 
     <script>
-      const API_URL = "https://script.google.com/macros/s/AKfycbwmQNZg_LnBJd3OybS3svFGdKJ729rYPo-72HQm2_nShKpCQT9uo0bKjUi4pIZHtw0c/exec";
+      const API_URL = "https://script.google.com/macros/s/AKfycbzcZwPK7yEddJBzfU7I-mTQKfkRMfHnB4FwHSdI5FBXbUQnf6vVNwTMbk-w6SbcAV0g/exec";
       let toastTimer = null;
 
       // 顯示頁面內的提示訊息（非彈窗）
@@ -445,9 +496,37 @@
         });
       }
 
-      // 刪除該筆情報資料
+      // 全選 / 取消全選
+      function toggleSelectAll(selectAllCheckbox) {
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        checkboxes.forEach(cb => {
+          cb.checked = selectAllCheckbox.checked;
+        });
+      }
+
+      // 單筆刪除
       function deleteItem(rowIndex) {
-        if (!confirm("⚠️ 確定要刪除這筆花田情報嗎？刪除後無法恢復喔！")) return;
+        if (!confirm("⚠️ 確定要刪除這筆花田情報嗎？")) return;
+        executeDelete([rowIndex]);
+      }
+
+      // 多筆批次刪除
+      function deleteSelectedItems() {
+        const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+        if (checkboxes.length === 0) {
+          showToast("⚠️ 請先勾選要刪除的花田！");
+          return;
+        }
+
+        const rowIndexes = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        if (!confirm(`⚠️ 確定要刪除選取的 ${rowIndexes.length} 筆情報嗎？`)) return;
+
+        executeDelete(rowIndexes);
+      }
+
+      // 發送刪除請求（支援單筆與多筆）
+      function executeDelete(rowIndexes) {
+        showToast("⏳ 正在刪除資料中...");
 
         fetch(API_URL, {
           method: "POST",
@@ -456,7 +535,8 @@
           },
           body: JSON.stringify({
             action: "delete",
-            rowIndex: rowIndex
+            rowIndexes: rowIndexes, // 支援多筆刪除
+            rowIndex: rowIndexes[0]  // 相容單筆舊格式
           }),
           redirect: "follow"
         })
@@ -464,6 +544,9 @@
         .then(res => {
           if (res.status === "success") {
             showToast("🗑️ 已成功刪除情報！");
+            // 重置全選勾選框
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) selectAll.checked = false;
             fetchData();
           } else {
             showToast("❌ 刪除失敗：" + (res.message || "未知錯誤"));
@@ -471,7 +554,7 @@
         })
         .catch(err => {
           console.error("Delete error:", err);
-          showToast("❌ 發送刪除請求時發生錯誤...");
+          showToast("❌ 刪除完成或發生錯誤，正在更新清單...");
           fetchData();
         });
       }
@@ -480,6 +563,10 @@
       function fetchData() {
         const container = document.getElementById('data-list');
         container.innerHTML = '<div class="loading">🔄 讀取最新花情中...</div>';
+
+        // 重新整理時重置全選框
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) selectAll.checked = false;
 
         fetch(API_URL, {
           method: "GET",
@@ -511,7 +598,10 @@
           html += `
             <div class="card">
               <div class="card-header">
-                <span class="flower-type">🌸 ${escapeHtml(item.flowerType)}</span>
+                <div class="header-left">
+                  <input type="checkbox" class="item-checkbox" value="${item.rowIndex}">
+                  <span class="flower-type">🌸 ${escapeHtml(item.flowerType)}</span>
+                </div>
                 <div style="display: flex; align-items: center;">
                   <span class="farmer-badge">👤 ${escapeHtml(item.farmer)}</span>
                   <button class="delete-btn" onclick="deleteItem(${item.rowIndex})">🗑️ 刪除</button>
