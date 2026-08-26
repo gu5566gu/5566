@@ -562,7 +562,7 @@
       // 讀取花田情報清單
       function fetchData() {
         const container = document.getElementById('data-list');
-        container.innerHTML = '<div class="loading">🔄 讀取最新花情中...</div>';
+        container.innerHTML = '<div class="loading">🔄 讀取中...</div>';
 
         // 重新整理時重置全選框
         const selectAll = document.getElementById('selectAll');
@@ -589,7 +589,7 @@
       function renderCards(data) {
         const container = document.getElementById('data-list');
         if (!data || data.length === 0) {
-          container.innerHTML = '<div class="loading">🈳 目前尚無任何花田回報。</div>';
+          container.innerHTML = '<div class="loading">🈳 目前尚無任何回報。</div>';
           return;
         }
 
@@ -641,7 +641,7 @@
 
       // 2. 複製完整花情資訊
       function copyCardInfo(flowerType, bloomTime, location) {
-        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n gu5566gu.github.io/5566/`;
+        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n https://gu5566gu.github.io/5566/`;
         navigator.clipboard.writeText(fullText)
           .then(() => showToast("📋 已複製花田資訊！"))
           .catch(err => console.error(err));
