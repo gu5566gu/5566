@@ -447,28 +447,26 @@
       const API_URL = "https://script.google.com/macros/s/AKfycbzcZwPK7yEddJBzfU7I-mTQKfkRMfHnB4FwHSdI5FBXbUQnf6vVNwTMbk-w6SbcAV0g/exec";
       let toastTimer = null;
 
-      // 🌐 解析文字中的緯經度座標，並透過 Open-Meteo API 反查該國家的當前時間
+      // 🌐 解析文字中的緯經度座標，並透過 Open-Meteo API 反查該國家的當前時間（不顯示秒）
       async function getCountryTimeByCoords(locationText) {
-        // 正規表示式尋找緯經度：例如 25.0339, 121.5644
         const coordRegex = /(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
         const match = locationText.match(coordRegex);
 
         if (!match) {
-          return null; // 若文字中無標準座標，回傳 null
+          return null;
         }
 
         const lat = parseFloat(match[1]);
         const lng = parseFloat(match[2]);
 
         try {
-          // 透過免費開放 API 取得座標所屬時區
           const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`);
           const data = await res.json();
           
           if (data && data.timezone && data.current_weather) {
-            const timeZoneStr = data.timezone; // 例如 "Asia/Tokyo"
+            const timeZoneStr = data.timezone;
             
-            // 將時間格式化為該時區的當地時間
+            // 💡 僅顯示至「分」，不顯示秒數
             const options = {
               timeZone: timeZoneStr,
               year: 'numeric',
@@ -476,12 +474,11 @@
               day: '2-digit',
               hour: '2-digit',
               minute: '2-digit',
-              second: '2-digit',
               hour12: false
             };
 
             const nowInTimeZone = new Date().toLocaleString('zh-TW', options);
-            const shortZone = timeZoneStr.split('/')[1] || timeZoneStr; // 擷取城市名如 Tokyo
+            const shortZone = timeZoneStr.split('/')[1] || timeZoneStr;
             return `${nowInTimeZone} (${shortZone})`;
           }
         } catch (e) {
@@ -668,7 +665,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                   <div>
                     <span class="label">📍 座標/位置：</span>
-                    <!-- 🌍 動態顯示座標國家的當地時間 -->
+                    <!-- 🌍 動態顯示座標國家的當地時間 (不含秒) -->
                     <span class="coord-time-tag" id="coord-time-${index}">🌍 查詢座標當地時間中...</span>
                   </div>
                   <div class="btn-group-inline">
@@ -712,7 +709,7 @@
           .catch(err => console.error(err));
       }
 
-      // 複製完整花情資訊（同步自動帶入該座標國家的當地時間）
+      // 複製完整花情資訊
       async function copyCardInfo(flowerType, bloomTime, location) {
         showToast("⏳ 正在取得座標國家當地時間...");
         const countryTime = await getCountryTimeByCoords(location);
