@@ -268,6 +268,19 @@
         font-weight: bold;
         color: #555;
       }
+
+      /* 🌍 座標國家當地時間標籤樣式 */
+      .coord-time-tag {
+        font-size: 0.8rem;
+        color: #2e7d32;
+        background-color: #e8f5e9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-left: 6px;
+        display: inline-block;
+      }
+
       .location-box {
         margin-top: 4px;
         white-space: pre-wrap;
@@ -434,7 +447,50 @@
       const API_URL = "https://script.google.com/macros/s/AKfycbzcZwPK7yEddJBzfU7I-mTQKfkRMfHnB4FwHSdI5FBXbUQnf6vVNwTMbk-w6SbcAV0g/exec";
       let toastTimer = null;
 
-      // 顯示頁面內的提示訊息（非彈窗）
+      // 🌐 解析文字中的緯經度座標，並透過 Open-Meteo API 反查該國家的當前時間
+      async function getCountryTimeByCoords(locationText) {
+        // 正規表示式尋找緯經度：例如 25.0339, 121.5644
+        const coordRegex = /(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
+        const match = locationText.match(coordRegex);
+
+        if (!match) {
+          return null; // 若文字中無標準座標，回傳 null
+        }
+
+        const lat = parseFloat(match[1]);
+        const lng = parseFloat(match[2]);
+
+        try {
+          // 透過免費開放 API 取得座標所屬時區
+          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`);
+          const data = await res.json();
+          
+          if (data && data.timezone && data.current_weather) {
+            const timeZoneStr = data.timezone; // 例如 "Asia/Tokyo"
+            
+            // 將時間格式化為該時區的當地時間
+            const options = {
+              timeZone: timeZoneStr,
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            };
+
+            const nowInTimeZone = new Date().toLocaleString('zh-TW', options);
+            const shortZone = timeZoneStr.split('/')[1] || timeZoneStr; // 擷取城市名如 Tokyo
+            return `${nowInTimeZone} (${shortZone})`;
+          }
+        } catch (e) {
+          console.error("無法取得座標國家時間:", e);
+        }
+        return null;
+      }
+
+      // 顯示頁面內提示框
       function showToast(message) {
         const toast = document.getElementById("toast");
         toast.innerText = message;
@@ -446,14 +502,14 @@
         }, 2000);
       }
 
-      // 複製頂部連結專用函式
+      // 複製連結專用
       function copyLink(title, url) {
         navigator.clipboard.writeText(url)
           .then(() => showToast(`📋 已複製 ${title} 連結`))
           .catch(err => console.error(err));
       }
 
-      // 送出表單卡片資料
+      // 送出表單資料
       function submitForm(event) {
         event.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -524,7 +580,7 @@
         executeDelete(rowIndexes);
       }
 
-      // 發送刪除請求（支援單筆與多筆）
+      // 執行刪除
       function executeDelete(rowIndexes) {
         showToast("⏳ 正在刪除資料中...");
 
@@ -535,8 +591,8 @@
           },
           body: JSON.stringify({
             action: "delete",
-            rowIndexes: rowIndexes, // 支援多筆刪除
-            rowIndex: rowIndexes[0]  // 相容單筆舊格式
+            rowIndexes: rowIndexes,
+            rowIndex: rowIndexes[0]
           }),
           redirect: "follow"
         })
@@ -544,7 +600,6 @@
         .then(res => {
           if (res.status === "success") {
             showToast("🗑️ 已成功刪除情報！");
-            // 重置全選勾選框
             const selectAll = document.getElementById('selectAll');
             if (selectAll) selectAll.checked = false;
             fetchData();
@@ -564,7 +619,6 @@
         const container = document.getElementById('data-list');
         container.innerHTML = '<div class="loading">🔄 讀取中...</div>';
 
-        // 重新整理時重置全選框
         const selectAll = document.getElementById('selectAll');
         if (selectAll) selectAll.checked = false;
 
@@ -585,7 +639,7 @@
         });
       }
 
-      // 渲染情報卡片
+      // 渲染卡片清單
       function renderCards(data) {
         const container = document.getElementById('data-list');
         if (!data || data.length === 0) {
@@ -594,7 +648,7 @@
         }
 
         let html = '';
-        data.forEach(function(item) {
+        data.forEach(function(item, index) {
           html += `
             <div class="card">
               <div class="card-header">
@@ -612,7 +666,11 @@
               </div>
               <div class="info-row">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                  <span class="label">📍 座標/位置：</span>
+                  <div>
+                    <span class="label">📍 座標/位置：</span>
+                    <!-- 🌍 動態顯示座標國家的當地時間 -->
+                    <span class="coord-time-tag" id="coord-time-${index}">🌍 查詢座標當地時間中...</span>
+                  </div>
                   <div class="btn-group-inline">
                     <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
                     <button class="copy-btn-info" onclick="copyCardInfo('${escapeJs(item.flowerType)}', '${escapeJs(item.bloomTime)}', '${escapeJs(item.location)}')">複製資訊</button>
@@ -630,20 +688,40 @@
           `;
         });
         container.innerHTML = html;
+
+        // 渲染完畢後非同步取得每個座標對應國家的當地時間
+        data.forEach(async function(item, index) {
+          const timeTag = document.getElementById(`coord-time-${index}`);
+          if (!timeTag) return;
+          
+          const countryTime = await getCountryTimeByCoords(item.location);
+          if (countryTime) {
+            timeTag.innerText = `🌍 當地：${countryTime}`;
+          } else {
+            timeTag.innerText = `🌍 無法識別座標時區`;
+            timeTag.style.backgroundColor = "#f5f5f5";
+            timeTag.style.color = "#777";
+          }
+        });
       }
 
-      // 1. 複製座標/位置
+      // 複製座標
       function copyText(text) {
         navigator.clipboard.writeText(text)
           .then(() => showToast("📍 已複製座標！"))
           .catch(err => console.error(err));
       }
 
-      // 2. 複製完整花情資訊
-      function copyCardInfo(flowerType, bloomTime, location) {
-        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n https://gu5566gu.github.io/5566/`;
+      // 複製完整花情資訊（同步自動帶入該座標國家的當地時間）
+      async function copyCardInfo(flowerType, bloomTime, location) {
+        showToast("⏳ 正在取得座標國家當地時間...");
+        const countryTime = await getCountryTimeByCoords(location);
+        const timeDisplay = countryTime ? countryTime : "無法辨識當地時間";
+
+        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n🌍 座標當地時間：${timeDisplay}\n📍 位置：${location}\nhttps://gu5566gu.github.io/5566/`;
+        
         navigator.clipboard.writeText(fullText)
-          .then(() => showToast("📋 已複製花田資訊！"))
+          .then(() => showToast("📋 已複製花田資訊（含座標國家時間）！"))
           .catch(err => console.error(err));
       }
 
