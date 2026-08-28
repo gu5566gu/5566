@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>皮群花田情報</title>
+    <title>皮克敏花農情報站</title>
     <style>
       :root {
         --primary-color: #4CAF50;
@@ -410,13 +410,13 @@
     </div>
 
     <div class="header">
-      <h1>🌸 皮群花田情報</h1>
-    
+      <h1>🌸 皮克敏花農情報站</h1>
+      <p>即時回報與查詢大花花田</p>
     </div>
 
     <!-- ✍️ 可填寫的花田情報卡片 -->
     <div class="form-card">
-      <h2>📝 回報情報</h2>
+      <h2>📝 回報花田情報</h2>
       <form id="flowerForm" onsubmit="submitForm(event)">
         <div class="form-group">
           <label for="farmer">👤 回報人</label>
@@ -440,7 +440,7 @@
           <input type="text" id="flowerType" placeholder="例如：大麗花" required>
         </div>
         
-        <!-- 🎨 新增：花色多選核取方塊 -->
+        <!-- 🎨 花色多選核取方塊 -->
         <div class="form-group">
           <label>🎨 花色（可多選）</label>
           <div class="checkbox-group">
@@ -483,52 +483,60 @@
     </div>
 
     <script>
-      const API_URL = "https://script.google.com/macros/s/AKfycbx5dURacqH__AKPITGFvBNEgCsOvSs3Y8ycp7nxCvXXWZ1-9XHQpo1R9OUoZP8s9MxM/exec";
+      const API_URL = "https://script.google.com/macros/s/AKfycbzcZwPK7yEddJBzfU7I-mTQKfkRMfHnB4FwHSdI5FBXbUQnf6vVNwTMbk-w6SbcAV0g/exec";
       let toastTimer = null;
 
-      // 🌐 解析座標並反查國家與該國當地時間（更穩定版）
-async function getCountryTimeByCoords(locationText) {
-  // 匹配經緯度格式
-  const coordRegex = /(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
-  const match = locationText.match(coordRegex);
+      // 🌐 解析座標並反查國家與該國當地時間（修正優化版）
+      async function getCountryTimeByCoords(locationText) {
+        const coordRegex = /(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
+        const match = locationText.match(coordRegex);
 
-  if (!match) return null;
+        if (!match) return null;
 
-  const lat = parseFloat(match[1]);
-  const lng = parseFloat(match[2]);
+        const lat = parseFloat(match[1]);
+        const lng = parseFloat(match[2]);
 
-  try {
-    // 使用 BigDataCloud reverse-geocode API 直接取得國家與時區資訊
-    const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=zh`);
-    if (!res.ok) throw new Error("Network response was not ok");
-    
-    const data = await res.json();
-    
-    // 取得國家名稱與時區 ID
-    const countryName = data.countryName || "";
-    const timeZone = data.localityInfo?.informative?.find(i => i.description === "time zone")?.name || 
-                     Intl.DateTimeFormat().resolvedOptions().timeZone; // 備用機制
+        try {
+          // 使用 BigDataCloud 逆地理 API 一併取得國家與時區
+          const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=zh`);
+          if (!res.ok) throw new Error("網絡請求無回應");
 
-    // 格式化當地時間 (格式: YYYY/MM/DD HH:mm)
-    const options = {
-      timeZone: timeZone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    };
+          const data = await res.json();
+          const countryName = data.countryName || "";
+          
+          // 擷取時區 Identifier
+          let timeZoneStr = "";
+          if (data.localityInfo && data.localityInfo.informative) {
+            const tzObj = data.localityInfo.informative.find(i => i.description === "time zone");
+            if (tzObj && tzObj.name) {
+              timeZoneStr = tzObj.name;
+            }
+          }
 
-    const formatter = new Intl.DateTimeFormat('zh-TW', options);
-    const localTimeStr = formatter.format(new Date());
+          if (!timeZoneStr) {
+            timeZoneStr = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          }
 
-    return countryName ? `${countryName} (${localTimeStr})` : `${localTimeStr}`;
-  } catch (e) {
-    console.error("無法取得座標國家時間:", e);
-    return null;
-  }
-}
+          // 利用瀏覽器原生 Intl 格式化當地時間
+          const options = {
+            timeZone: timeZoneStr,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          };
+
+          const formatter = new Intl.DateTimeFormat('zh-TW', options);
+          const localTimeStr = formatter.format(new Date());
+
+          return countryName ? `${countryName} (${localTimeStr})` : `${localTimeStr}`;
+        } catch (e) {
+          console.error("無法取得座標國家時間:", e);
+          return null;
+        }
+      }
 
       // 顯示頁面內提示框
       function showToast(message) {
@@ -564,7 +572,7 @@ async function getCountryTimeByCoords(locationText) {
         const payload = {
           farmer: document.getElementById('farmer').value,
           flowerType: document.getElementById('flowerType').value,
-          flowerColor: selectedColors, // 新增欄位
+          flowerColor: selectedColors,
           location: document.getElementById('location').value,
           bloomTime: document.getElementById('bloomTime').value,
           note: document.getElementById('note').value
@@ -582,7 +590,7 @@ async function getCountryTimeByCoords(locationText) {
         .then(res => {
           showToast("✅ 花田情報已成功送出！");
           document.getElementById('flowerType').value = '';
-          document.querySelectorAll('input[name="flowerColor"]').forEach(cb => cb.checked = false); // 清空勾選
+          document.querySelectorAll('input[name="flowerColor"]').forEach(cb => cb.checked = false);
           document.getElementById('location').value = '';
           document.getElementById('bloomTime').value = '';
           document.getElementById('note').value = '隨意收';
