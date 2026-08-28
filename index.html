@@ -718,7 +718,7 @@
         const countryTime = await getCountryTimeByCoords(location);
         const timeDisplay = countryTime ? countryTime : "無法辨識國家時間";
 
-        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n🌍 座標國家時間：${timeDisplay}\n📍 位置：${location}\nhttps://gu5566gu.github.io/5566/`;
+        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n🌍 座標國家時間：${timeDisplay}\n https://gu5566gu.github.io/5566/`;
         
         navigator.clipboard.writeText(fullText)
           .then(() => showToast("📋 已複製花田資訊（含國家與時間）！"))
