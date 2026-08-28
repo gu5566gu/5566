@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>皮克敏花農情報站</title>
+    <title>皮群花田情報</title>
     <style>
       :root {
         --primary-color: #4CAF50;
@@ -132,7 +132,7 @@
         color: #444;
         margin-bottom: 4px;
       }
-      .form-group input, .form-group select, .form-group textarea {
+      .form-group input[type="text"], .form-group select, .form-group textarea {
         width: 100%;
         padding: 8px 10px;
         border: 1px solid #ccc;
@@ -151,6 +151,32 @@
         border-color: var(--primary-color);
         box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
       }
+
+      /* 🎨 花色核取方塊樣式 */
+      .checkbox-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        background: #f9fdf9;
+        padding: 8px 10px;
+        border: 1px solid #c8e6c9;
+        border-radius: 6px;
+      }
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.9rem;
+        font-weight: normal;
+        cursor: pointer;
+        user-select: none;
+      }
+      .checkbox-label input {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
       .btn-submit {
         background-color: var(--primary-color);
         color: white;
@@ -384,13 +410,13 @@
     </div>
 
     <div class="header">
-      <h1>🌸 皮克敏花農情報站</h1>
-      <p>即時回報與查詢大花花田</p>
+      <h1>🌸 皮群花田情報</h1>
+    
     </div>
 
     <!-- ✍️ 可填寫的花田情報卡片 -->
     <div class="form-card">
-      <h2>📝 回報花田情報</h2>
+      <h2>📝 回報情報</h2>
       <form id="flowerForm" onsubmit="submitForm(event)">
         <div class="form-group">
           <label for="farmer">👤 回報人</label>
@@ -411,8 +437,21 @@
         </div>
         <div class="form-group">
           <label for="flowerType">🌸 花種</label>
-          <input type="text" id="flowerType" placeholder="例如：白色大麗花" required>
+          <input type="text" id="flowerType" placeholder="例如：大麗花" required>
         </div>
+        
+        <!-- 🎨 新增：花色多選核取方塊 -->
+        <div class="form-group">
+          <label>🎨 花色（可多選）</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label"><input type="checkbox" name="flowerColor" value="白"> ⚪ 白</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerColor" value="黃"> 🟡 黃</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerColor" value="紅"> 🔴 紅</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerColor" value="藍"> 🔵 藍</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerColor" value="混"> 🌈 混</label>
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="location">📍 座標 / 位置（支援多行拉長填寫）</label>
           <textarea id="location" rows="3" placeholder="例如：25.033968, 121.564468&#10;或詳細地點描述" required></textarea>
@@ -444,7 +483,7 @@
     </div>
 
     <script>
-      const API_URL = "https://script.google.com/macros/s/AKfycbzcZwPK7yEddJBzfU7I-mTQKfkRMfHnB4FwHSdI5FBXbUQnf6vVNwTMbk-w6SbcAV0g/exec";
+      const API_URL = "https://script.google.com/macros/s/AKfycbx5dURacqH__AKPITGFvBNEgCsOvSs3Y8ycp7nxCvXXWZ1-9XHQpo1R9OUoZP8s9MxM/exec";
       let toastTimer = null;
 
       // 🌐 解析座標並反查國家與該國當地時間（不含秒）
@@ -458,7 +497,6 @@
         const lng = parseFloat(match[2]);
 
         try {
-          // 同時反查時區與國家中文名稱
           const [timeRes, geoRes] = await Promise.all([
             fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`),
             fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=zh`)
@@ -516,9 +554,15 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "⏳ 正在送出中...";
 
+        // 🎨 取得已勾選的花色陣列組合成字串
+        const selectedColors = Array.from(document.querySelectorAll('input[name="flowerColor"]:checked'))
+          .map(cb => cb.value)
+          .join(', ');
+
         const payload = {
           farmer: document.getElementById('farmer').value,
           flowerType: document.getElementById('flowerType').value,
+          flowerColor: selectedColors, // 新增欄位
           location: document.getElementById('location').value,
           bloomTime: document.getElementById('bloomTime').value,
           note: document.getElementById('note').value
@@ -536,6 +580,7 @@
         .then(res => {
           showToast("✅ 花田情報已成功送出！");
           document.getElementById('flowerType').value = '';
+          document.querySelectorAll('input[name="flowerColor"]').forEach(cb => cb.checked = false); // 清空勾選
           document.getElementById('location').value = '';
           document.getElementById('bloomTime').value = '';
           document.getElementById('note').value = '隨意收';
@@ -662,18 +707,20 @@
                 </div>
               </div>
               <div class="info-row">
+                <span class="label">🎨 花色：</span>${escapeHtml(item.flowerColor || '無')}
+              </div>
+              <div class="info-row">
                 <span class="label">⏰ 首花時間：</span>${escapeHtml(item.bloomTime)}
               </div>
               <div class="info-row">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                   <div>
                     <span class="label">📍 座標/位置：</span>
-                    <!-- 🌍 動態顯示座標國家與當地時間 -->
                     <span class="coord-time-tag" id="coord-time-${index}">🌍 查詢國家與時間中...</span>
                   </div>
                   <div class="btn-group-inline">
                     <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
-                    <button class="copy-btn-info" onclick="copyCardInfo('${escapeJs(item.flowerType)}', '${escapeJs(item.bloomTime)}', '${escapeJs(item.location)}')">複製資訊</button>
+                    <button class="copy-btn-info" onclick="copyCardInfo('${escapeJs(item.flowerType)}', '${escapeJs(item.flowerColor)}', '${escapeJs(item.bloomTime)}', '${escapeJs(item.location)}')">複製資訊</button>
                   </div>
                 </div>
                 <div class="location-box">${escapeHtml(item.location)}</div>
@@ -713,12 +760,13 @@
       }
 
       // 複製完整花情資訊
-      async function copyCardInfo(flowerType, bloomTime, location) {
+      async function copyCardInfo(flowerType, flowerColor, bloomTime, location) {
         showToast("⏳ 正在取得座標國家與當地時間...");
         const countryTime = await getCountryTimeByCoords(location);
         const timeDisplay = countryTime ? countryTime : "無法辨識國家時間";
 
-        const fullText = `🌸 ${flowerType}\n⏰ 首花時間：${bloomTime}\n🌍 座標國家時間：${timeDisplay}\n https://gu5566gu.github.io/5566/`;
+        const colorDisplay = flowerColor ? ` [${flowerColor}]` : '';
+        const fullText = `🌸 ${flowerType}${colorDisplay}\n⏰ 首花時間：${bloomTime}\n🌍 座標國家時間：${timeDisplay}\n https://gu5566gu.github.io/5566/`;
         
         navigator.clipboard.writeText(fullText)
           .then(() => showToast("📋 已複製花田資訊（含國家與時間）！"))
