@@ -242,41 +242,6 @@
         border: 1px solid #ccc;
       }
 
-      /* 👾 DC 連結按鈕樣式 */
-      .dc-link-group {
-        display: flex;
-        background: #5865F2;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      .dc-link-main {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 10px;
-        color: white;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: bold;
-        white-space: nowrap;
-      }
-      .dc-link-main:hover {
-        background-color: #4752C4;
-      }
-      .dc-link-copy {
-        background-color: #4752C4;
-        border: none;
-        border-left: 1px solid rgba(255,255,255,0.2);
-        color: white;
-        padding: 0 8px;
-        cursor: pointer;
-        font-size: 0.85rem;
-      }
-      .dc-link-copy:hover {
-        background-color: #3c45a5;
-      }
-
       .card-container {
         display: flex;
         flex-direction: column;
@@ -503,19 +468,13 @@
       </form>
     </div>
 
-    <!-- 🛠️ 控制列面板（包含重新整理、全選、批次刪除、DC連結） -->
+    <!-- 🛠️ 控制列面板（包含重新整理、全選、批次刪除） -->
     <div class="action-bar">
       <button class="btn-refresh" onclick="fetchData()">🔄 重新整理</button>
       <label class="select-all-label">
         <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"> 全選
       </label>
       <button class="btn-batch-delete" onclick="deleteSelectedItems()">🗑️ 刪除選取</button>
-
-      <!-- 👾 DC 連結方塊 -->
-      <div class="dc-link-group">
-        <a class="dc-link-main" href="https://discord.com/invite/tPHUJcWbs" target="_blank">👾 DC</a>
-        <button class="dc-link-copy" onclick="copyLink('DC', 'https://discord.com/invite/tPHUJcWbs')" title="複製 DC 連結">📋</button>
-      </div>
     </div>
 
     <!-- 📋 讀取出的卡片清單 -->
@@ -524,7 +483,7 @@
     </div>
 
     <script>
-      const API_URL = "https://script.google.com/macros/s/AKfycbxjCZ62mpt_ze0blyKd_wFOAchl16E1tjiYbFFBugrw18fo0OCF-mq3sEOLAjRafXkx/exec";
+      const API_URL = "https://script.google.com/macros/s/AKfycbyZBUr4ONWGIFbA0uhmLddfb3JIONVLctQzoCJbJZ5uWSdWHL-cln2OQXK-gXPg76Zd/exec";
       let toastTimer = null;
 
       // 🌐 解析座標並反查國家與該國當地時間
