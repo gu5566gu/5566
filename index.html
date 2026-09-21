@@ -147,7 +147,7 @@
         box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
       }
 
-      /* 🎨 花色核取方塊樣式 */
+      /* 🎨 花色與花種多選核取方塊樣式 */
       .checkbox-group {
         display: flex;
         gap: 10px;
@@ -156,6 +156,8 @@
         padding: 8px 10px;
         border: 1px solid #c8e6c9;
         border-radius: 6px;
+        max-height: 180px;
+        overflow-y: auto;
       }
       .checkbox-label {
         display: flex;
@@ -430,9 +432,55 @@
             <option value="國民隨便收">國民隨便收</option>
           </select>
         </div>
+
+        <!-- 🌸 花種多選核取方塊 -->
         <div class="form-group">
-          <label for="flowerType">🌸 花種</label>
-          <input type="text" id="flowerType" placeholder="例如：美人蕉" required>
+          <label>🌸 花種（可多選）</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="普通花朵"> 普通花朵</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="三色堇"> 三色堇</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="玫瑰"> 玫瑰</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="聖誕紅"> 聖誕紅</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="山茶花"> 山茶花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="梅花"> 梅花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="櫻花"> 櫻花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="鬱金香"> 鬱金香</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="康乃馨"> 康乃馨</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="繡球花"> 繡球花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="百合"> 百合</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="向日葵"> 向日葵</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="彼岸花"> 彼岸花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="大波斯菊"> 大波斯菊</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="兔耳花"> 兔耳花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="水仙"> 水仙</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="銀蓮花"> 銀蓮花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="粉蝶花"> 粉蝶花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="海芋"> 海芋</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="雞蛋花"> 雞蛋花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="扶桑花"> 扶桑花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="石竹"> 石竹</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="龍膽"> 龍膽</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="菊花"> 菊花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="聖誕玫瑰"> 聖誕玫瑰</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="嘉德麗雅蘭"> 嘉德麗雅蘭</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="風信子"> 風信子</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="豌豆花"> 豌豆花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="鈴蘭"> 鈴蘭</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="牡丹"> 牡丹</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="睡蓮"> 睡蓮</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="牽牛花"> 牽牛花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="九重葛"> 九重葛</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="大理花"> 大理花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="鐵線蓮"> 鐵線蓮</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="雪滴花"> 雪滴花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="小蒼蘭"> 小蒼蘭</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="油菜花"> 油菜花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="週年紀念玫瑰"> 週年紀念玫瑰</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="鳶尾花"> 鳶尾花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="天堂鳥"> 天堂鳥</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="雞冠花"> 雞冠花</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="萬壽菊"> 萬壽菊</label>
+          </div>
         </div>
         
         <!-- 🎨 花色多選核取方塊 -->
@@ -481,7 +529,7 @@
       const API_URL = "https://script.google.com/macros/s/AKfycbwGK3RXPb1ucjTU25tvXERgcnruh-ZoyzWhj0uQ29TOxQoV-dLA7uR9AjOMe951OH8/exec";
       let toastTimer = null;
 
-      // 🌐 精準解析座標並查詢國家與該國當地時間 (雙 API 保險與格式修復)
+      // 🌐 精準解析座標並查詢國家與該國當地時間
       async function getCountryTimeByCoords(locationText) {
         const coordRegex = /(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
         const match = locationText.match(coordRegex);
@@ -505,18 +553,18 @@
           console.warn("國家查詢跳過:", e);
         }
 
-        // 2. 取得時區 identifier (如 Asia/Tokyo)
+        // 2. 取得時區 identifier
         try {
           const tzRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`);
           if (tzRes.ok) {
             const tzData = await tzRes.json();
-            timeZoneStr = tzData.timezone; // 例如 "Asia/Tokyo"
+            timeZoneStr = tzData.timezone;
           }
         } catch (e) {
           console.warn("時區 API 查詢失敗:", e);
         }
 
-        // 3. 格式化時間 (使用瀏覽器內建 Intl 原生轉換)
+        // 3. 格式化時間
         if (timeZoneStr) {
           try {
             const options = {
@@ -536,7 +584,7 @@
           }
         }
 
-        // 4. Fallback 保險機制：若無 API 或查詢失敗，直接根據經度估算時區 offset
+        // 4. Fallback 保險機制
         try {
           const offset = Math.round(lng / 15);
           const nowUtc = new Date();
@@ -578,6 +626,17 @@
       // 送出表單資料
       function submitForm(event) {
         event.preventDefault();
+
+        // 取得勾選的花種 (多選)
+        const selectedTypes = Array.from(document.querySelectorAll('input[name="flowerType"]:checked'))
+          .map(cb => cb.value)
+          .join(', ');
+
+        if (!selectedTypes) {
+          showToast("⚠️ 請至少選擇一種花種！");
+          return;
+        }
+
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerText = "⏳ 正在送出中...";
@@ -588,7 +647,7 @@
 
         const payload = {
           farmer: document.getElementById('farmer').value,
-          flowerType: document.getElementById('flowerType').value,
+          flowerType: selectedTypes,
           flowerColor: selectedColors,
           location: document.getElementById('location').value,
           bloomTime: document.getElementById('bloomTime').value,
@@ -606,8 +665,10 @@
         .then(res => res.json())
         .then(res => {
           showToast("✅ 花田情報已成功送出！");
-          document.getElementById('flowerType').value = '';
+          // 清空勾選狀態
+          document.querySelectorAll('input[name="flowerType"]').forEach(cb => cb.checked = false);
           document.querySelectorAll('input[name="flowerColor"]').forEach(cb => cb.checked = false);
+          
           document.getElementById('location').value = '';
           document.getElementById('bloomTime').value = '';
           document.getElementById('note').value = '隨意收';
