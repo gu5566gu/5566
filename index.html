@@ -437,7 +437,7 @@
         <div class="form-group">
           <label>🌸 花種（可多選）</label>
           <div class="checkbox-group">
-            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="三色堇"> 三色堇</label>
+   <label class="checkbox-label"><input type="checkbox" name="flowerType" value="三色堇"> 三色堇</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="玫瑰"> 玫瑰</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="聖誕紅"> 聖誕紅</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="山茶花"> 山茶花</label>
@@ -445,7 +445,6 @@
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="櫻花"> 櫻花</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="鬱金香"> 鬱金香</label>
                         <label class="checkbox-label"><input type="checkbox" name="flowerType" value="鸚鵡鬱金香">鸚鵡鬱金香</label>
-
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="康乃馨"> 康乃馨</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="繡球花"> 繡球花</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="百合"> 百合</label>
@@ -482,6 +481,7 @@
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="天堂鳥"> 天堂鳥</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="雞冠花"> 雞冠花</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="萬壽菊"> 萬壽菊</label>
+ <label class="checkbox-label"><input type="checkbox" name="flowerType" value="洋桔梗"> 洋桔梗</label>
           </div>
         </div>
         
@@ -530,6 +530,9 @@
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbwGK3RXPb1ucjTU25tvXERgcnruh-ZoyzWhj0uQ29TOxQoV-dLA7uR9AjOMe951OH8/exec";
       let toastTimer = null;
+      
+      // 全域快取，避免對相同座標重複發送 API 請求
+      const geoCache = {};
 
       // 🌐 精準解析座標並查詢國家與該國當地時間
       async function getCountryTimeByCoords(locationText) {
@@ -540,6 +543,12 @@
 
         const lat = parseFloat(match[1]);
         const lng = parseFloat(match[2]);
+        const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+
+        // 若有快取直接傳回
+        if (geoCache[cacheKey]) {
+          return geoCache[cacheKey];
+        }
 
         let countryName = "";
         let timeZoneStr = "";
@@ -566,6 +575,8 @@
           console.warn("時區 API 查詢失敗:", e);
         }
 
+        let finalResult = null;
+
         // 3. 格式化時間
         if (timeZoneStr) {
           try {
@@ -580,29 +591,54 @@
             };
             const formatter = new Intl.DateTimeFormat('zh-TW', options);
             const localTimeStr = formatter.format(new Date());
-            return countryName ? `${countryName} (${localTimeStr})` : `${localTimeStr}`;
+            finalResult = countryName ? `${countryName} (${localTimeStr})` : `${localTimeStr}`;
           } catch (e) {
             console.error("Intl 格式化錯誤:", e);
           }
         }
 
         // 4. Fallback 保險機制
-        try {
-          const offset = Math.round(lng / 15);
-          const nowUtc = new Date();
-          const targetDate = new Date(nowUtc.getTime() + (offset * 3600 * 1000));
-          
-          const y = targetDate.getUTCFullYear();
-          const m = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
-          const d = String(targetDate.getUTCDate()).padStart(2, '0');
-          const hh = String(targetDate.getUTCHours()).padStart(2, '0');
-          const mm = String(targetDate.getUTCMinutes()).padStart(2, '0');
+        if (!finalResult) {
+          try {
+            const offset = Math.round(lng / 15);
+            const nowUtc = new Date();
+            const targetDate = new Date(nowUtc.getTime() + (offset * 3600 * 1000));
+            
+            const y = targetDate.getUTCFullYear();
+            const m = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
+            const d = String(targetDate.getUTCDate()).padStart(2, '0');
+            const hh = String(targetDate.getUTCHours()).padStart(2, '0');
+            const mm = String(targetDate.getUTCMinutes()).padStart(2, '0');
 
-          const formattedTime = `${y}/${m}/${d} ${hh}:${mm}`;
-          const gmtLabel = `GMT${offset >= 0 ? '+' : ''}${offset}`;
-          return countryName ? `${countryName} ${gmtLabel} (${formattedTime})` : `${gmtLabel} (${formattedTime})`;
-        } catch (err) {
-          return null;
+            const formattedTime = `${y}/${m}/${d} ${hh}:${mm}`;
+            const gmtLabel = `GMT${offset >= 0 ? '+' : ''}${offset}`;
+            finalResult = countryName ? `${countryName} ${gmtLabel} (${formattedTime})` : `${gmtLabel} (${formattedTime})`;
+          } catch (err) {
+            finalResult = null;
+          }
+        }
+
+        if (finalResult) {
+          geoCache[cacheKey] = finalResult;
+        }
+
+        return finalResult;
+      }
+
+      // 🔍 點擊按鈕手動觸發單筆國家/時間查詢
+      async function fetchSingleTime(index, locationText) {
+        const timeTag = document.getElementById(`coord-time-${index}`);
+        if (!timeTag) return;
+
+        timeTag.innerText = "⏳ 查詢中...";
+        const countryTime = await getCountryTimeByCoords(locationText);
+        
+        if (countryTime) {
+          timeTag.innerText = `🌍 當地：${countryTime}`;
+        } else {
+          timeTag.innerText = `🌍 無法識別座標國家`;
+          timeTag.style.backgroundColor = "#f5f5f5";
+          timeTag.style.color = "#777";
         }
       }
 
@@ -749,7 +785,7 @@
         });
       }
 
-      // 讀取花田情報清單
+      // 讀取花田情報清單（高速渲染，不阻塞頁面）
       function fetchData() {
         const container = document.getElementById('data-list');
         container.innerHTML = '<div class="loading">🔄 讀取中...</div>';
@@ -806,7 +842,9 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                   <div>
                     <span class="label">📍 座標/位置：</span>
-                    <span class="coord-time-tag" id="coord-time-${index}">🌍 查詢國家與時間中...</span>
+                    <span class="coord-time-tag" id="coord-time-${index}">
+                      <button type="button" class="copy-btn" onclick="fetchSingleTime(${index}, '${escapeJs(item.location)}')">🔍 查詢國家/時間</button>
+                    </span>
                   </div>
                   <div class="btn-group-inline">
                     <button class="copy-btn" onclick="copyText('${escapeJs(item.location)}')">複製座標</button>
@@ -825,21 +863,6 @@
           `;
         });
         container.innerHTML = html;
-
-        // 非同步解析地點與國家
-        data.forEach(async function(item, index) {
-          const timeTag = document.getElementById(`coord-time-${index}`);
-          if (!timeTag) return;
-          
-          const countryTime = await getCountryTimeByCoords(item.location);
-          if (countryTime) {
-            timeTag.innerText = `🌍 當地：${countryTime}`;
-          } else {
-            timeTag.innerText = `🌍 無法識別座標國家`;
-            timeTag.style.backgroundColor = "#f5f5f5";
-            timeTag.style.color = "#777";
-          }
-        });
       }
 
       // 複製座標
