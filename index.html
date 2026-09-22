@@ -147,6 +147,15 @@
         box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
       }
 
+      /* ⏰ 時間選擇雙欄群組 */
+      .time-select-group {
+        display: flex;
+        gap: 10px;
+      }
+      .time-select-group select {
+        flex: 1;
+      }
+
       /* 🎨 花色與花種多選核取方塊樣式 */
       .checkbox-group {
         display: flex;
@@ -437,7 +446,7 @@
         <div class="form-group">
           <label>🌸 花種（可多選）</label>
           <div class="checkbox-group">
-   <label class="checkbox-label"><input type="checkbox" name="flowerType" value="三色堇"> 三色堇</label>
+            <label class="checkbox-label"><input type="checkbox" name="flowerType" value="三色堇"> 三色堇</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="玫瑰"> 玫瑰</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="聖誕紅"> 聖誕紅</label>
             <label class="checkbox-label"><input type="checkbox" name="flowerType" value="山茶花"> 山茶花</label>
@@ -501,10 +510,20 @@
           <label for="location">📍 座標</label>
           <textarea id="location" rows="3" placeholder="例如：25.033968, 121.564468&#10;或詳細地點描述" required></textarea>
         </div>
+
+        <!-- ⏰ 首花時間（12小時制: 時/分 分開下拉選單） -->
         <div class="form-group">
-          <label for="bloomTime">⏰ 首花時間</label>
-          <input type="text" id="bloomTime" placeholder="例如：15:21" required>
+          <label>⏰ 首花時間</label>
+          <div class="time-select-group">
+            <select id="bloomHour" required>
+              <option value="" disabled selected>時</option>
+            </select>
+            <select id="bloomMinute" required>
+              <option value="" disabled selected>分</option>
+            </select>
+          </div>
         </div>
+
         <div class="form-group">
           <label for="note">📝 備註</label>
           <input type="text" id="note" value="收" placeholder="例如：隨意收">
@@ -533,6 +552,30 @@
       
       // 全域快取，避免對相同座標重複發送 API 請求
       const geoCache = {};
+
+      // ⏰ 初始化首花時間下拉選單 (12小時制, 5分鐘一格)
+      function initTimeSelects() {
+        const hourSelect = document.getElementById('bloomHour');
+        const minuteSelect = document.getElementById('bloomMinute');
+
+        // 生成小時選項 (01 ~ 12)
+        for (let h = 1; h <= 12; h++) {
+          const formattedHour = String(h).padStart(2, '0');
+          const option = document.createElement('option');
+          option.value = formattedHour;
+          option.textContent = `${formattedHour} 時`;
+          hourSelect.appendChild(option);
+        }
+
+        // 生成分鐘選項 (00, 05, 10 ... 55)
+        for (let m = 0; m < 60; m += 5) {
+          const formattedMinute = String(m).padStart(2, '0');
+          const option = document.createElement('option');
+          option.value = formattedMinute;
+          option.textContent = `${formattedMinute} 分`;
+          minuteSelect.appendChild(option);
+        }
+      }
 
       // 🌐 精準解析座標並查詢國家與該國當地時間
       async function getCountryTimeByCoords(locationText) {
@@ -675,6 +718,14 @@
           return;
         }
 
+        const hour = document.getElementById('bloomHour').value;
+        const minute = document.getElementById('bloomMinute').value;
+
+        if (!hour || !minute) {
+          showToast("⚠️ 請選擇完整的首花時間（時/分）！");
+          return;
+        }
+
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerText = "⏳ 正在送出中...";
@@ -683,12 +734,15 @@
           .map(cb => cb.value)
           .join(', ');
 
+        // 組合時跟分
+        const formattedBloomTime = `${hour}:${minute}`;
+
         const payload = {
           farmer: document.getElementById('farmer').value,
           flowerType: selectedTypes,
           flowerColor: selectedColors,
           location: document.getElementById('location').value,
-          bloomTime: document.getElementById('bloomTime').value,
+          bloomTime: formattedBloomTime,
           note: document.getElementById('note').value
         };
 
@@ -703,12 +757,13 @@
         .then(res => res.json())
         .then(res => {
           showToast("✅ 花田情報已成功送出！");
-          // 清空勾選狀態
+          // 清空勾選與選單狀態
           document.querySelectorAll('input[name="flowerType"]').forEach(cb => cb.checked = false);
           document.querySelectorAll('input[name="flowerColor"]').forEach(cb => cb.checked = false);
           
           document.getElementById('location').value = '';
-          document.getElementById('bloomTime').value = '';
+          document.getElementById('bloomHour').value = '';
+          document.getElementById('bloomMinute').value = '';
           document.getElementById('note').value = '隨意收';
           fetchData();
         })
@@ -893,7 +948,11 @@
         return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
       }
 
-      window.onload = fetchData;
+      // 頁面載入完成後執行
+      window.onload = function() {
+        initTimeSelects();
+        fetchData();
+      };
     </script>
   </body>
 </html>
