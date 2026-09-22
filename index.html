@@ -563,7 +563,7 @@
           const formattedHour = String(h).padStart(2, '0');
           const option = document.createElement('option');
           option.value = formattedHour;
-          option.textContent = `${formattedHour} 時`;
+          option.textContent = `${formattedHour} `;
           hourSelect.appendChild(option);
         }
 
@@ -572,7 +572,7 @@
           const formattedMinute = String(m).padStart(2, '0');
           const option = document.createElement('option');
           option.value = formattedMinute;
-          option.textContent = `${formattedMinute} 分`;
+          option.textContent = `${formattedMinute} `;
           minuteSelect.appendChild(option);
         }
       }
