@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="EasyGPSMock" xmlns="http://www.topografix.com/GPX/1/1">
+  <rte>
+    <name>加拿大公園純點</name>
+    <rtept lat="49.253433" lon="-123.124586"/>
+    <rtept lat="49.253433" lon="-123.120108"/>
+    <rtept lat="49.253208" lon="-123.120108"/>
+    <rtept lat="49.253208" lon="-123.124586"/>
+    <rtept lat="49.252984" lon="-123.124586"/>
+    <rtept lat="49.252984" lon="-123.120108"/>
+    <rtept lat="49.252759" lon="-123.120108"/>
+    <rtept lat="49.252759" lon="-123.124586"/>
+    <rtept lat="49.252534" lon="-123.124586"/>
+    <rtept lat="49.252534" lon="-123.120108"/>
+    <rtept lat="49.252309" lon="-123.120108"/>
+    <rtept lat="49.252309" lon="-123.124586"/>
+    <rtept lat="49.252084" lon="-123.124586"/>
+    <rtept lat="49.252084" lon="-123.120108"/>
+    <rtept lat="49.25186" lon="-123.120108"/>
+    <rtept lat="49.25186" lon="-123.124586"/>
+    <rtept lat="49.251635" lon="-123.124586"/>
+    <rtept lat="49.251635" lon="-123.120108"/>
+  </rte>
+</gpx>

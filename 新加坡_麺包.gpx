@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="EasyGPSMock" xmlns="http://www.topografix.com/GPX/1/1">
+  <rte>
+    <name>新加坡 麺包</name>
+    <rtept lat="1.307208" lon="103.907059"/>
+    <rtept lat="1.306754" lon="103.906376"/>
+    <rtept lat="1.306224" lon="103.905713"/>
+    <rtept lat="1.306125" lon="103.905435"/>
+    <rtept lat="1.304906" lon="103.905138"/>
+    <rtept lat="1.305578" lon="103.904168"/>
+    <rtept lat="1.305614" lon="103.904082"/>
+    <rtept lat="1.304805" lon="103.902813"/>
+    <rtept lat="1.308415" lon="103.903059"/>
+    <rtept lat="1.308675" lon="103.902821"/>
+    <rtept lat="1.309202" lon="103.902354"/>
+    <rtept lat="1.310043" lon="103.902076"/>
+    <rtept lat="1.31049" lon="103.901679"/>
+    <rtept lat="1.310667" lon="103.901559"/>
+    <rtept lat="1.311871" lon="103.900722"/>
+    <rtept lat="1.311899" lon="103.900329"/>
+    <rtept lat="1.312513" lon="103.899281"/>
+    <rtept lat="1.312917" lon="103.899713"/>
+    <rtept lat="1.313501" lon="103.899588"/>
+    <rtept lat="1.313506" lon="103.899166"/>
+    <rtept lat="1.314332" lon="103.898794"/>
+    <rtept lat="1.314203" lon="103.898998"/>
+    <rtept lat="1.313866" lon="103.899406"/>
+    <rtept lat="1.313364" lon="103.900146"/>
+  </rte>
+</gpx>
